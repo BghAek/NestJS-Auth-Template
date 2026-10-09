@@ -4,7 +4,7 @@ import { Resend } from "resend";
 
 
 @Injectable()
-export class EmailSrvice {
+export class EmailService {
   private resend: Resend;
 
   constructor(private configService: ConfigService) {
