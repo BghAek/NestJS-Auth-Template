@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { UsersService } from "../users/users.service.js";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
@@ -44,6 +44,39 @@ export class AuthService {
     return {
       message: 'Registration Successful. Pleace check your email to verify your account'
     }
+  }
+
+  async verifyEmail(token: string, res: Response) {
+    const user = await this.usersService.findByVerificationToken(token);
+    if (!user || !user.verificationToken) {
+      throw new BadRequestException("Invalid verification token");
+    }
+
+    if (user.verificationTokenExpiresAt && user.verificationTokenExpiresAt < new Date()) {
+      throw new BadRequestException("Verification token expired");
+    }
+
+    await this.usersService.update(user.id, {
+      isVerified: true,
+      verificationToken: null,
+      verificationTokenExpiresAt: null
+    });
+    // Log the user automaticaly :
+    const tokens = await this.generateTokens(user);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    await this.setRefreshTokenCookie(res, tokens.refreshToken);
+
+    return {
+      message: "Email verified successfuly. You are now logged in",
+      accessToken: tokens.accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      }
+    };
+
   }
 
   async login(dto: LoginDTO, res: Response) {
