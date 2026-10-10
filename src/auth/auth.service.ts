@@ -76,6 +76,47 @@ export class AuthService {
     }
   }
 
+  async refresh(refreshToken: string, res: Response) {
+    if (!refreshToken) {
+      throw new UnauthorizedException("No refresh token found")
+    }
+
+    let payload: { sub: string, email: string };
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET')
+      });
+    } catch {
+      throw new UnauthorizedException("Invalid or expired refresh token");
+    }
+
+    const user = await this.usersService.findByID(payload.sub);
+    if (!user || !user.refreshTokenHash) {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+
+    const tokenMatch = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    if (!tokenMatch) {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+
+    const tokens = await this.generateTokens(user);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    await this.setRefreshTokenCookie(res, tokens.refreshToken);
+
+    return {
+      accessToken: tokens.accessToken
+    };
+
+  }
+
+  async logout(userId: string, res: Response) {
+    await this.usersService.update(userId, { refreshTokenHash: null });
+
+    res.clearCookie('refresh_token');
+    return { message: "Logged out Successfuly" };
+  }
+
   private async generateTokens(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
