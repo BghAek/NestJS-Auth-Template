@@ -7,7 +7,7 @@ import { RegisterDTO } from "./dto/register.dto.js";
 import * as bcrypt from "bcryptjs";
 import * as crypto from "crypto"
 import { LoginDTO } from "./dto/login.dto.js";
-import { Response } from "express";
+import type { Response } from "express";
 import { User } from "../db/schema.js";
 
 
