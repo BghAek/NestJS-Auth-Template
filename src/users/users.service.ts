@@ -14,6 +14,12 @@ export class UsersService {
     });
   }
 
+  async findByResetToken(token: string) {
+    return db.query.users.findFirst({
+      where: eq(users.verificationToken, token)
+    });
+  }
+
   async findByEmail(email: string) {
     return db.query.users.findFirst({
       where: eq(users.email, email),
