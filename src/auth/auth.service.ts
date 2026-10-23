@@ -150,6 +150,30 @@ export class AuthService {
     return { message: "Logged out Successfuly" };
   }
 
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      return {
+        message: 'If an account with this email exist, a reset email has been sent.'
+      };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1hr
+
+    await this.usersService.update(user.id, {
+      resetToken,
+      resetTokenExpiresAt
+    });
+
+    void this.emailService.sendPasswordResetEmail(user.email, resetToken);
+
+    return {
+      message: 'If an account with this email exist, a reset email has been sent.'
+    };
+
+  }
+
   private async generateTokens(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
