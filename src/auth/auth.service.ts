@@ -174,6 +174,29 @@ export class AuthService {
 
   }
 
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.usersService.findByResetToken(token);
+    if (!user || !user.resetToken) {
+      throw new BadRequestException('Invalid reset token');
+    }
+    if (user.resetTokenExpiresAt && user.resetTokenExpiresAt < new Date()) {
+      throw new BadRequestException('Reset token has expired, please request a new one.')
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    await this.usersService.update(user.id, {
+      passwordHash,
+      resetToken: null,
+      resetTokenExpiresAt: null
+    });
+
+    return {
+      message: 'Password reset successful. You can now login'
+    };
+
+  }
+
   private async generateTokens(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
