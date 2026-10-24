@@ -7,6 +7,8 @@ import { Public } from "../common/decorators/public.decorator.js";
 import { RegisterDTO } from "./dto/register.dto.js";
 import { LoginDTO } from "./dto/login.dto.js";
 import { CurrentUser } from "../common/decorators/current-user.decorator.js";
+import { ForgotPasswordDto } from "./dto/forgot-password.dto.js";
+import { ResetPasswordDto } from "./dto/reset-password.dto.js";
 
 
 @ApiTags('Auth')
@@ -66,6 +68,24 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current authenticated user' })
   me(@CurrentUser() user: User) {
     return { id: user.id, email: user.email, name: user.name, role: user.role, isVerified: user.isVerified };
+  }
+
+  // POST /api/auth/forgot-password
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request a password reset email' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  // POST /api/auth/reset-password
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password using token from email' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.password);
   }
 
 }
