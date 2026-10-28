@@ -1,10 +1,10 @@
 {
   "name": "nestjs-auth",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "description": "Production-ready NestJS authentication template with JWT, Drizzle ORM, Neon Postgres, email verification, refresh token rotation, RBAC, and rate limiting",
+  "author": "Abdelkader Babaghayou",
+  "private": false,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "nest build",
