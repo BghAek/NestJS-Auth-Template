@@ -8,9 +8,16 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { TasksModule } from './tasks/tasks.module.js';
 import { AdminModule } from './admin/admin.module.js';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 20,
+      }
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
@@ -22,6 +29,7 @@ import { AdminModule } from './admin/admin.module.js';
     AdminModule
   ],
   providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard }
   ]
